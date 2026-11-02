@@ -1,0 +1,31 @@
+body {
+    background-color: #f5f6f8;
+    color: #222;
+}
+
+.home-header {
+    background-color: #202938;
+    color: white;
+}
+
+.home-header h1 {
+    font-weight: 700;
+}
+
+.card {
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+}
+
+.card-img-top {
+    height: 190px;
+    object-fit: cover;
+}
+
+.lan-image {
+    width: 100%;
+}
+
+footer {
+    margin-top: 60px;
+}

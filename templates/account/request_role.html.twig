@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demander un rôle{% endblock %}
+
+{% block body %}
+    <div class="container py-5" style="max-width: 500px;">
+        <h1 class="h3 fw-bold mb-4">Demander un changement de rôle</h1>
+
+        {% for label, messages in app.flashes %}
+            {% for msg in messages %}
+                <div class="alert alert-{{ label }}">{{ msg }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form_start(form) }}
+        {{ form_row(form.role) }}
+        {{ form_row(form.message) }}
+        <button class="btn btn-primary rounded-pill mt-3" type="submit">Envoyer la demande</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

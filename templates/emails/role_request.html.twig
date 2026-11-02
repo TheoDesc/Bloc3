@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; color: #1a1a1a; padding: 20px;">
+<h2 style="color: #1e3a5f;">Nouvelle demande de rôle</h2>
+
+<p>
+    <strong>{{ userEmail }}</strong> souhaite obtenir le rôle
+    <strong>{{ requestedRoleLabel }}</strong>.
+</p>
+
+{% if message %}
+    <p style="background: #f4f6f8; padding: 12px; border-radius: 6px;">
+        « {{ message }} »
+    </p>
+{% endif %}
+
+<p>
+    Rendez-vous sur <a href="{{ url('admin_user_index') }}">la gestion des utilisateurs</a> pour valider ou refuser cette demande.
+</p>
+</body>
+</html>

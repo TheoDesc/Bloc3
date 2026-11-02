@@ -1,0 +1,43 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Utilisateurs{% endblock %}
+{% block admin_title %}Gestion des utilisateurs{% endblock %}
+
+{% block admin_body %}
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Rôle actuel</th>
+                    <th style="width: 320px;">Changer le rôle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% for role in user.roles %}
+                                <span class="badge bg-secondary">{{ role }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <form method="post" action="{{ path('admin_user_role', {id: user.id}) }}" class="d-flex gap-2">
+                                <select name="role" class="form-select form-select-sm">
+                                    {% for label, value in availableRoles %}
+                                        <option value="{{ value }}" {{ value in user.roles ? 'selected' : '' }}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" name="_token" value="{{ csrf_token('role' ~ user.id) }}">
+                                <button class="btn btn-sm btn-primary rounded-pill">OK</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

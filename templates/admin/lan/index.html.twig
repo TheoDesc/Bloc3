@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration des LAN{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestion des LAN</h1>
+        <a href="{{ path('admin_lan_new') }}" class="btn btn-primary">Ajouter une LAN</a>
+    </div>
+
+    {% if lans is empty %}
+        <div class="alert alert-secondary">Aucune LAN enregistrée.</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr><th>Nom</th><th>Ville</th><th>Date</th><th>Jeu</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                {% for lan in lans %}
+                    <tr>
+                        <td>{{ lan.nom }}</td>
+                        <td>{{ lan.ville }}</td>
+                        <td>{{ lan.dateDebut|date('d/m/Y') }}</td>
+                        <td>{{ lan.jeu }}</td>
+                        <td class="d-flex gap-2">
+                            <a href="{{ path('admin_lan_edit', {id: lan.id}) }}" class="btn btn-sm btn-warning">Modifier</a>
+                            <form method="post" action="{{ path('admin_lan_delete', {id: lan.id}) }}" onsubmit="return confirm('Supprimer cette LAN ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete-lan-' ~ lan.id) }}">
+                                <button class="btn btn-sm btn-danger">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

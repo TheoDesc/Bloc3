@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block body %}
+<div class="container my-5" style="max-width: 800px;">
+    <h1 class="mb-4">{{ titre }}</h1>
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+                {{ form_widget(form) }}
+                <button class="btn btn-primary mt-3">{{ titre }}</button>
+                <a href="{{ path('admin_lan_index') }}" class="btn btn-secondary mt-3">Annuler</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

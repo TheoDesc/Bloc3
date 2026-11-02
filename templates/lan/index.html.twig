@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - LAN France{% endblock %}
+
+{% block body %}
+<header class="home-header">
+    <div class="container py-5">
+        <h1>Bienvenue sur LAN France</h1>
+        <p class="lead">Retrouve les événements LAN organisés partout en France.</p>
+        <a href="#evenements" class="btn btn-primary">Voir les événements</a>
+    </div>
+</header>
+
+<main class="container my-5" id="evenements">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Les prochaines LAN</h2>
+            <p class="text-secondary mb-0">Découvre les événements à venir.</p>
+        </div>
+        <span class="badge bg-primary">{{ lans|length }} événement(s)</span>
+    </div>
+
+    {% if lans is empty %}
+        <div class="alert alert-secondary text-center py-5">
+            <h4>Aucune LAN pour le moment</h4>
+            <p class="mb-0">Les prochains événements seront affichés ici.</p>
+        </div>
+    {% else %}
+        <div class="row g-4">
+            {% for lan in lans %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        {% if lan.image %}
+                            <img src="{{ lan.image }}" class="card-img-top lan-image" alt="{{ lan.nom }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ lan.nom }}</h5>
+                            <p class="text-secondary mb-2">
+                                {{ lan.ville }} · {{ lan.dateDebut|date('d/m/Y') }}
+                            </p>
+                            <p class="card-text">
+                                {{ lan.description|length > 100 ? lan.description|slice(0, 100) ~ '...' : lan.description }}
+                            </p>
+                            <p><strong>Jeu :</strong> {{ lan.jeu }}</p>
+                            <p><strong>Prix :</strong> {{ lan.prix|number_format(2, ',', ' ') }} €</p>
+                            <a href="{{ path('app_lan_show', {id: lan.id}) }}" class="btn btn-primary">Voir la LAN</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</main>
+{% endblock %}
