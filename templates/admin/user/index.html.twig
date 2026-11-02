@@ -1,9 +1,68 @@
+
 {% extends 'admin/base_admin.html.twig' %}
 
 {% block title %}Utilisateurs{% endblock %}
 {% block admin_title %}Gestion des utilisateurs{% endblock %}
 
 {% block admin_body %}
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <h2 class="h5 fw-bold mb-3">Demandes de rôles</h2>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>Utilisateur</th>
+                    <th>Rôle demandé</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for request in requests %}
+                    <tr>
+                        <td>{{ request.user.email }}</td>
+                        <td>
+                            {{ request.role == 'ROLE_REDACTEUR' ? 'Rédacteur' : 'Vérificateur' }}
+                        </td>
+                        <td>{{ request.message ?: 'Aucun message' }}</td>
+                        <td>{{ request.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{{ path('admin_role_request_accept', {id: request.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ request.id) }}">
+                                    <button class="btn btn-sm btn-success">Accepter</button>
+                                </form>
+
+                                <form method="post" action="{{ path('admin_role_request_reject', {id: request.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ request.id) }}">
+                                    <button class="btn btn-sm btn-danger">Refuser</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            Aucune demande en attente.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h2 class="h5 fw-bold mb-3">Liste des utilisateurs</h2>
+
     <div class="card border-0 shadow-sm rounded-4">
         <div class="table-responsive">
             <table class="table align-middle mb-0">
@@ -27,7 +86,9 @@
                             <form method="post" action="{{ path('admin_user_role', {id: user.id}) }}" class="d-flex gap-2">
                                 <select name="role" class="form-select form-select-sm">
                                     {% for label, value in availableRoles %}
-                                        <option value="{{ value }}" {{ value in user.roles ? 'selected' : '' }}>{{ label }}</option>
+                                        <option value="{{ value }}" {{ value in user.roles ? 'selected' : '' }}>
+                                            {{ label }}
+                                        </option>
                                     {% endfor %}
                                 </select>
                                 <input type="hidden" name="_token" value="{{ csrf_token('role' ~ user.id) }}">
@@ -40,4 +101,5 @@
             </table>
         </div>
     </div>
+
 {% endblock %}
