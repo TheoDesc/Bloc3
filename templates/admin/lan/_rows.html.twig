@@ -1,0 +1,26 @@
+{% for lan in lans %}
+    <tr>
+        <td>{{ lan.nom }}</td>
+        <td>{{ lan.ville }}</td>
+        <td>{{ lan.dateDebut|date('d/m/Y') }}</td>
+        <td>{{ lan.jeu }}</td>
+        <td class="d-flex gap-2">
+            <a href="{{ path('admin_lan_edit', {id: lan.id}) }}" class="btn btn-sm btn-warning">
+                Modifier
+            </a>
+
+            <form method="post"
+                  action="{{ path('admin_lan_delete', {id: lan.id}) }}"
+                  onsubmit="return confirm('Supprimer cette LAN ?')">
+
+                <input type="hidden" name="_token" value="{{ csrf_token('delete-lan-' ~ lan.id) }}">
+
+                <button class="btn btn-sm btn-danger">Supprimer</button>
+            </form>
+        </td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="5" class="text-center">Aucune LAN trouvée.</td>
+    </tr>
+{% endfor %}

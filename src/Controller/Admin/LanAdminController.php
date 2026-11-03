@@ -24,6 +24,25 @@ class LanAdminController extends AbstractController
         ]);
     }
 
+    #[Route('/search', name: 'admin_lan_search', methods: ['GET'])]
+    public function search(Request $request, LanRepository $repository): Response
+    {
+        $recherche = $request->query->get('q', '');
+
+        $lans = $repository->createQueryBuilder('l')
+            ->where('l.nom LIKE :recherche')
+            ->orWhere('l.ville LIKE :recherche')
+            ->orWhere('l.jeu LIKE :recherche')
+            ->setParameter('recherche', '%' . $recherche . '%')
+            ->orderBy('l.dateDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('admin/lan/_rows.html.twig', [
+            'lans' => $lans,
+        ]);
+    }
+
     #[Route('/new', name: 'admin_lan_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
@@ -34,11 +53,16 @@ class LanAdminController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($lan);
             $em->flush();
+
             $this->addFlash('success', 'La LAN a été ajoutée.');
+
             return $this->redirectToRoute('admin_lan_index');
         }
 
-        return $this->render('admin/lan/form.html.twig', ['form' => $form, 'titre' => 'Ajouter une LAN']);
+        return $this->render('admin/lan/form.html.twig', [
+            'form' => $form,
+            'titre' => 'Ajouter une LAN',
+        ]);
     }
 
     #[Route('/{id}/edit', name: 'admin_lan_edit', requirements: ['id' => '\\d+'], methods: ['GET', 'POST'])]
@@ -49,19 +73,25 @@ class LanAdminController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
+
             $this->addFlash('success', 'La LAN a été modifiée.');
+
             return $this->redirectToRoute('admin_lan_index');
         }
 
-        return $this->render('admin/lan/form.html.twig', ['form' => $form, 'titre' => 'Modifier une LAN']);
+        return $this->render('admin/lan/form.html.twig', [
+            'form' => $form,
+            'titre' => 'Modifier une LAN',
+        ]);
     }
 
     #[Route('/{id}/delete', name: 'admin_lan_delete', requirements: ['id' => '\\d+'], methods: ['POST'])]
     public function delete(Lan $lan, Request $request, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete-lan-'.$lan->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete-lan-' . $lan->getId(), $request->getPayload()->getString('_token'))) {
             $em->remove($lan);
             $em->flush();
+
             $this->addFlash('success', 'La LAN a été supprimée.');
         }
 

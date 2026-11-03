@@ -1,37 +1,54 @@
+
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ lan.nom }} - LAN France{% endblock %}
 
 {% block body %}
-<div class="container my-5">
-    <a href="{{ path('app_home') }}" class="btn btn-outline-secondary mb-4">Retour à l'accueil</a>
+    <div class="container my-5">
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            {% if lan.image %}
-                <img src="{{ lan.image }}" class="img-fluid rounded mb-4" alt="{{ lan.nom }}">
-            {% endif %}
-            <h1>{{ lan.nom }}</h1>
-            <p class="text-secondary">{{ lan.ville }}</p>
-            <h4 class="mt-4">Description</h4>
-            <p>{{ lan.description|nl2br }}</p>
-        </div>
+        <a href="{{ path('app_home') }}" class="btn btn-outline-secondary mb-4">
+            Retour à l'accueil
+        </a>
 
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-body">
-                    <h4>Informations</h4>
-                    <p><strong>Ville :</strong> {{ lan.ville }}</p>
-                    <p><strong>Adresse :</strong> {{ lan.adresse ?: 'Non renseignée' }}</p>
-                    <p><strong>Début :</strong> {{ lan.dateDebut|date('d/m/Y H:i') }}</p>
-                    <p><strong>Fin :</strong> {{ lan.dateFin|date('d/m/Y H:i') }}</p>
-                    <p><strong>Jeu :</strong> {{ lan.jeu }}</p>
-                    <p><strong>Places :</strong> {{ lan.placesMax }}</p>
-                    <p><strong>Prix :</strong> {{ lan.prix|number_format(2, ',', ' ') }} €</p>
-                    <a href="{{ path('app_register') }}" class="btn btn-primary w-100">Créer un compte</a>
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+                {% if lan.image %}
+                    <img
+                        src="{{ lan.image }}"
+                        class="img-fluid rounded mb-4"
+                        alt="{{ lan.nom }}"
+                        loading="lazy"
+                    >
+                {% endif %}
+
+                <h1>{{ lan.nom }}</h1>
+                <p class="text-secondary">{{ lan.ville }}</p>
+
+                <h4 class="mt-4">Description</h4>
+                <p>{{ lan.description|nl2br }}</p>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Informations</h4>
+
+                        <p><strong>Ville :</strong> {{ lan.ville }}</p>
+                        <p><strong>Adresse :</strong> {{ lan.adresse ?: 'Non renseignée' }}</p>
+                        <p><strong>Début :</strong> {{ lan.dateDebut|date('d/m/Y H:i') }}</p>
+                        <p><strong>Fin :</strong> {{ lan.dateFin|date('d/m/Y H:i') }}</p>
+                        <p><strong>Jeu :</strong> {{ lan.jeu }}</p>
+                        <p><strong>Places :</strong> {{ lan.placesMax }}</p>
+                        <p><strong>Prix :</strong> {{ lan.prix|number_format(2, ',', ' ') }} €</p>
+
+                        <a href="{{ path('app_register') }}" class="btn btn-primary w-100">
+                            Créer un compte
+                        </a>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
-</div>
 {% endblock %}

@@ -6,7 +6,9 @@ use App\Entity\Lan;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/** @extends ServiceEntityRepository<Lan> */
+/**
+ * @extends ServiceEntityRepository<Lan>
+ */
 class LanRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
