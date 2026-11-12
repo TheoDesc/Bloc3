@@ -18,3 +18,9 @@ var/
 vendor/
 
 .env.local
+
+# Fichiers sensibles JWT
+/Symfony/config/jwt/
+/Symfony/.rnd
+*.pem
+*.pem.backup
