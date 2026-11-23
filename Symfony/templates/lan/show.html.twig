@@ -1,9 +1,9 @@
-
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ lan.nom }} - LAN France{% endblock %}
 
 {% block body %}
+
     <div class="container my-5">
 
         <a href="{{ path('app_home') }}" class="btn btn-outline-secondary mb-4">
@@ -13,6 +13,7 @@
         <div class="row g-4">
 
             <div class="col-lg-8">
+
                 {% if lan.image %}
                     <img
                         src="{{ lan.image }}"
@@ -23,32 +24,110 @@
                 {% endif %}
 
                 <h1>{{ lan.nom }}</h1>
-                <p class="text-secondary">{{ lan.ville }}</p>
+
+                <p class="text-secondary">
+                    <i class="bi bi-geo-alt"></i>
+                    {{ lan.ville }}
+                </p>
 
                 <h4 class="mt-4">Description</h4>
+
                 <p>{{ lan.description|nl2br }}</p>
+
+                <h4 class="mt-4">Localisation GPS</h4>
+
+                <p>
+                    <strong>Latitude :</strong>
+                    {{ lan.latitude ?? 'Non renseignée' }}
+                </p>
+
+                <p>
+                    <strong>Longitude :</strong>
+                    {{ lan.longitude ?? 'Non renseignée' }}
+                </p>
+
+                <h4 class="mt-4">Contact</h4>
+
+                <p>
+                    <strong>Nom :</strong>
+                    {{ lan.nomContact ?: 'Non renseigné' }}
+                </p>
+
+                <p>
+                    <strong>E-mail :</strong>
+                    {{ lan.emailContact ?: 'Non renseigné' }}
+                </p>
+
             </div>
 
             <div class="col-lg-4">
-                <div class="card">
+
+                <div class="card shadow-sm">
                     <div class="card-body">
+
                         <h4>Informations</h4>
 
-                        <p><strong>Ville :</strong> {{ lan.ville }}</p>
-                        <p><strong>Adresse :</strong> {{ lan.adresse ?: 'Non renseignée' }}</p>
-                        <p><strong>Début :</strong> {{ lan.dateDebut|date('d/m/Y H:i') }}</p>
-                        <p><strong>Fin :</strong> {{ lan.dateFin|date('d/m/Y H:i') }}</p>
-                        <p><strong>Jeu :</strong> {{ lan.jeu }}</p>
-                        <p><strong>Places :</strong> {{ lan.placesMax }}</p>
-                        <p><strong>Prix :</strong> {{ lan.prix|number_format(2, ',', ' ') }} €</p>
+                        <hr>
 
-                        <a href="{{ path('app_register') }}" class="btn btn-primary w-100">
+                        <p>
+                            <strong>Ville :</strong>
+                            {{ lan.ville }}
+                        </p>
+
+                        <p>
+                            <strong>Adresse :</strong>
+                            {{ lan.adresse ?: 'Non renseignée' }}
+                        </p>
+
+                        <p>
+                            <strong>Début :</strong>
+                            {{ lan.dateDebut|date('d/m/Y H:i') }}
+                        </p>
+
+                        <p>
+                            <strong>Fin :</strong>
+                            {{ lan.dateFin|date('d/m/Y H:i') }}
+                        </p>
+
+                        <p>
+                            <strong>Jeu :</strong>
+                            {{ lan.jeu }}
+                        </p>
+
+                        <p>
+                            <strong>Places :</strong>
+                            {{ lan.placesMax }}
+                        </p>
+
+                        <p>
+                            <strong>Prix :</strong>
+                            {{ lan.prix|number_format(2, ',', ' ') }} €
+                        </p>
+
+                        <hr>
+
+                        <a
+                            href="{{ path('app_lan_pdf', {'id': lan.id}) }}"
+                            class="btn btn-outline-primary w-100 mb-3"
+                        >
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            Télécharger la fiche PDF
+                        </a>
+
+                        <a
+                            href="{{ path('app_register') }}"
+                            class="btn btn-primary w-100"
+                        >
                             Créer un compte
                         </a>
+
                     </div>
                 </div>
+
             </div>
 
         </div>
+
     </div>
-{% endblock %}
+
+{% endblock %}²

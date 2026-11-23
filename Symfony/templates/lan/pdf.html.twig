@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+
+    <title>Fiche LAN - {{ lan.nom }}</title>
+
+    <style>
+        @page {
+            margin: 35px;
+        }
+
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            color: #202A38;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .header {
+            background-color: #101A2B;
+            color: white;
+            padding: 22px;
+            margin-bottom: 25px;
+        }
+
+        .brand {
+            color: #00E5FF;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .ville {
+            color: #B9CADB;
+            font-size: 12px;
+        }
+
+        h2 {
+            color: #167C98;
+            font-size: 14px;
+            border-bottom: 2px solid #00CFEF;
+            padding-bottom: 7px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+
+        .description {
+            background-color: #F2F6FA;
+            padding: 13px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 9px;
+            border-bottom: 1px solid #E1E7EF;
+            vertical-align: top;
+        }
+
+        td:first-child {
+            width: 35%;
+            color: #5E6C80;
+            font-weight: bold;
+        }
+
+        td:last-child {
+            color: #172338;
+            word-wrap: break-word;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 12px;
+            border-top: 1px solid #DCE3EB;
+            color: #8290A3;
+            font-size: 9px;
+            text-align: center;
+        }
+
+        .price {
+            color: #168A71;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="brand">LAN FRANCE</div>
+
+    <h1>{{ lan.nom }}</h1>
+
+    <div class="ville">
+        {{ lan.ville }}
+    </div>
+</div>
+
+<h2>Présentation de l'événement</h2>
+
+<div class="description">
+    {% if lan.description %}
+        {{ lan.description|e|nl2br }}
+    {% else %}
+        Aucune description disponible.
+    {% endif %}
+</div>
+
+<h2>Informations générales</h2>
+
+<table>
+    <tr>
+        <td>Nom de la LAN</td>
+        <td>{{ lan.nom }}</td>
+    </tr>
+
+    <tr>
+        <td>Ville</td>
+        <td>{{ lan.ville }}</td>
+    </tr>
+
+    <tr>
+        <td>Adresse</td>
+        <td>{{ lan.adresse ?: 'Non renseignée' }}</td>
+    </tr>
+
+    <tr>
+        <td>Date de début</td>
+        <td>
+            {% if lan.dateDebut %}
+                {{ lan.dateDebut|date('d/m/Y à H:i') }}
+            {% else %}
+                Non renseignée
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td>Date de fin</td>
+        <td>
+            {% if lan.dateFin %}
+                {{ lan.dateFin|date('d/m/Y à H:i') }}
+            {% else %}
+                Non renseignée
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td>Jeu</td>
+        <td>{{ lan.jeu }}</td>
+    </tr>
+
+    <tr>
+        <td>Nombre de places</td>
+        <td>{{ lan.placesMax }}</td>
+    </tr>
+
+    <tr>
+        <td>Prix</td>
+        <td class="price">
+            {{ lan.prix|number_format(2, ',', ' ') }} €
+        </td>
+    </tr>
+</table>
+
+<h2>Localisation GPS</h2>
+
+<table>
+    <tr>
+        <td>Latitude</td>
+        <td>
+            {% if lan.latitude is not null %}
+                {{ lan.latitude|number_format(6, '.', '') }}
+            {% else %}
+                Non renseignée
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td>Longitude</td>
+        <td>
+            {% if lan.longitude is not null %}
+                {{ lan.longitude|number_format(6, '.', '') }}
+            {% else %}
+                Non renseignée
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<h2>Contact de l'événement</h2>
+
+<table>
+    <tr>
+        <td>Nom du contact</td>
+        <td>{{ lan.nomContact ?: 'Non renseigné' }}</td>
+    </tr>
+
+    <tr>
+        <td>Adresse e-mail</td>
+        <td>{{ lan.emailContact ?: 'Non renseignée' }}</td>
+    </tr>
+</table>
+
+<h2>Photo de l'événement</h2>
+
+<table>
+    <tr>
+        <td>Adresse de la photo</td>
+        <td>
+            {{ lan.image ?: 'Aucune photo renseignée' }}
+        </td>
+    </tr>
+</table>
+
+<div class="footer">
+    LAN FRANCE - Fiche descriptive de l'événement
+</div>
+
+</body>
+</html>

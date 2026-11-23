@@ -1,0 +1,33 @@
+
+<h2>Confirmation de création de votre LAN</h2>
+
+<p>Bonjour {{ lan.nomContact }},</p>
+
+<p>Votre LAN a bien été enregistrée. Voici le récapitulatif des informations :</p>
+
+<ul>
+    <li><strong>Nom :</strong> {{ lan.nom }}</li>
+    <li><strong>Description :</strong> {{ lan.description }}</li>
+    <li><strong>Ville :</strong> {{ lan.ville }}</li>
+    <li><strong>Adresse :</strong> {{ lan.adresse ?? 'Non renseignée' }}</li>
+    <li><strong>Date de début :</strong> {{ lan.dateDebut|date('d/m/Y H:i') }}</li>
+    <li><strong>Date de fin :</strong> {{ lan.dateFin|date('d/m/Y H:i') }}</li>
+    <li><strong>Jeu :</strong> {{ lan.jeu }}</li>
+    <li><strong>Nombre maximum de joueurs :</strong> {{ lan.placesMax }}</li>
+    <li><strong>Prix :</strong> {{ lan.prix }} €</li>
+    <li><strong>Photo :</strong> {{ lan.image }}</li>
+    <li><strong>Latitude :</strong> {{ lan.latitude }}</li>
+    <li><strong>Longitude :</strong> {{ lan.longitude }}</li>
+    <li><strong>Contact :</strong> {{ lan.nomContact }}</li>
+    <li><strong>Email :</strong> {{ lan.emailContact }}</li>
+</ul>
+
+<p>
+    Vous pouvez consulter votre LAN en cliquant sur le lien suivant :
+</p>
+
+<p>
+    <a href="{{ lien }}">Voir la page de la LAN</a>
+</p>
+
+<p>Merci et à bientôt !</p>

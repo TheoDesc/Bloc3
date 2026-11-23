@@ -6,10 +6,14 @@ use App\Entity\Lan;
 use App\Form\LanType;
 use App\Repository\LanRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[IsGranted('ROLE_ADMIN')]
@@ -44,8 +48,12 @@ class LanAdminController extends AbstractController
     }
 
     #[Route('/new', name: 'admin_lan_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        LoggerInterface $logger
+    ): Response {
         $lan = new Lan();
         $form = $this->createForm(LanType::class, $lan);
         $form->handleRequest($request);
@@ -54,7 +62,32 @@ class LanAdminController extends AbstractController
             $em->persist($lan);
             $em->flush();
 
-            $this->addFlash('success', 'La LAN a été ajoutée.');
+            try {
+                $lien = $this->generateUrl(
+                    'app_lan_show',
+                    ['id' => $lan->getId()],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                );
+
+                $email = (new Email())
+                    ->from('no-reply@cesi.local')
+                    ->to($lan->getEmailContact())
+                    ->subject('Confirmation de création de votre LAN')
+                    ->html($this->renderView('emails/lan_confirmation.html.twig', [
+                        'lan' => $lan,
+                        'lien' => $lien,
+                    ]));
+
+                $mailer->send($email);
+
+                $this->addFlash('success', 'La LAN a été ajoutée et le mail de confirmation a été envoyé.');
+            } catch (\Throwable $e) {
+                $logger->error('Erreur lors de l’envoi du mail de confirmation : ' . $e->getMessage(), [
+                    'exception' => $e,
+                ]);
+
+                $this->addFlash('warning', 'La LAN a été ajoutée, mais le mail n’a pas pu être envoyé.');
+            }
 
             return $this->redirectToRoute('admin_lan_index');
         }
