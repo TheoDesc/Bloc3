@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -79,6 +80,23 @@
             word-wrap: break-word;
         }
 
+        .photo-container {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #F2F6FA;
+        }
+
+        .photo {
+            max-width: 100%;
+            max-height: 300px;
+        }
+
+        .no-photo {
+            color: #8290A3;
+            font-style: italic;
+        }
+
         .footer {
             margin-top: 30px;
             padding-top: 12px;
@@ -116,6 +134,22 @@
         Aucune description disponible.
     {% endif %}
 </div>
+
+<h2>Photo de l'événement</h2>
+
+{% if imageDataUri %}
+    <div class="photo-container">
+        <img
+            src="{{ imageDataUri }}"
+            class="photo"
+            alt="Photo de {{ lan.nom }}"
+        >
+    </div>
+{% else %}
+    <p class="no-photo">
+        Aucune photo locale disponible pour cet événement.
+    </p>
+{% endif %}
 
 <h2>Informations générales</h2>
 
@@ -212,17 +246,6 @@
     <tr>
         <td>Adresse e-mail</td>
         <td>{{ lan.emailContact ?: 'Non renseignée' }}</td>
-    </tr>
-</table>
-
-<h2>Photo de l'événement</h2>
-
-<table>
-    <tr>
-        <td>Adresse de la photo</td>
-        <td>
-            {{ lan.image ?: 'Aucune photo renseignée' }}
-        </td>
     </tr>
 </table>
 

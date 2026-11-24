@@ -1,18 +1,307 @@
+
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ titre }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+    <style>
+        #lan-map {
+            width: 100%;
+            height: 400px;
+            border-radius: 12px;
+            z-index: 1;
+        }
+
+        .map-help {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="container my-5" style="max-width: 800px;">
-    <h1 class="mb-4">{{ titre }}</h1>
-    <div class="card">
-        <div class="card-body">
-            {{ form_start(form) }}
-                {{ form_widget(form) }}
-                <button class="btn btn-primary mt-3">{{ titre }}</button>
-                <a href="{{ path('admin_lan_index') }}" class="btn btn-secondary mt-3">Annuler</a>
-            {{ form_end(form) }}
+    <div class="container my-5" style="max-width: 850px;">
+
+        <h1 class="mb-4">{{ titre }}</h1>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                {{ form_start(form) }}
+
+                {% if lan.image %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Photo actuelle</label>
+                        <div>
+                            <img
+                                src="{{ lan.image }}"
+                                alt="Photo actuelle de {{ lan.nom }}"
+                                class="img-fluid rounded"
+                                style="max-height: 220px; object-fit: cover;"
+                            >
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    {{ form_row(form.imageFile) }}
+
+                    <div id="image-preview-container" class="mt-3 d-none">
+                        <p class="fw-bold mb-2">Aperçu de la nouvelle photo</p>
+                        <img
+                            id="image-preview"
+                            src=""
+                            alt="Aperçu de la photo sélectionnée"
+                            class="img-fluid rounded"
+                            style="max-height: 250px; object-fit: cover;"
+                        >
+                    </div>
+                </div>
+
+                {{ form_row(form.nom) }}
+                {{ form_row(form.description) }}
+                {{ form_row(form.ville) }}
+                {{ form_row(form.adresse) }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.dateDebut) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.dateFin) }}
+                    </div>
+                </div>
+
+                {{ form_row(form.jeu) }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.placesMax) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.prix) }}
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h4 class="mb-2">Localisation de la LAN</h4>
+
+                <p class="map-help mb-3">
+                    Clique sur la carte pour choisir l'emplacement.
+                    Tu peux également déplacer le marqueur.
+                </p>
+
+                <div id="lan-map" class="mb-4"></div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.latitude) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.longitude) }}
+                    </div>
+                </div>
+
+                <div class="alert alert-light border mb-4">
+                    <span id="map-coordinate-status">
+                        Clique sur la carte pour définir les coordonnées GPS.
+                    </span>
+                </div>
+
+                <hr class="my-4">
+
+                <h4 class="mb-3">Informations de contact</h4>
+
+                {{ form_row(form.nomContact) }}
+                {{ form_row(form.emailContact) }}
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {{ titre }}
+                    </button>
+
+                    <a
+                        href="{{ path('admin_lan_index') }}"
+                        class="btn btn-secondary"
+                    >
+                        Annuler
+                    </a>
+                </div>
+
+                {{ form_end(form) }}
+
+            </div>
         </div>
     </div>
-</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Aperçu de la photo sélectionnée.
+            const imageInput = document.getElementById(
+                {{ form.imageFile.vars.id|json_encode|raw }}
+            );
+
+            const imagePreview = document.getElementById('image-preview');
+            const imageContainer = document.getElementById('image-preview-container');
+
+            if (imageInput) {
+                imageInput.addEventListener('change', function () {
+                    const fichier = this.files[0];
+
+                    if (!fichier) {
+                        imagePreview.src = '';
+                        imageContainer.classList.add('d-none');
+                        return;
+                    }
+
+                    if (!fichier.type.startsWith('image/')) {
+                        alert('Le fichier sélectionné doit être une image.');
+                        imageInput.value = '';
+                        imageContainer.classList.add('d-none');
+                        return;
+                    }
+
+                    imagePreview.src = URL.createObjectURL(fichier);
+                    imageContainer.classList.remove('d-none');
+                });
+            }
+
+            // Champs de coordonnées.
+            const latitudeInput = document.getElementById(
+                {{ form.latitude.vars.id|json_encode|raw }}
+            );
+
+            const longitudeInput = document.getElementById(
+                {{ form.longitude.vars.id|json_encode|raw }}
+            );
+
+            const coordinateStatus = document.getElementById(
+                'map-coordinate-status'
+            );
+
+            // Coordonnées initiales : position enregistrée ou centre de la France.
+            const latitudeInitiale = Number.parseFloat(latitudeInput.value);
+            const longitudeInitiale = Number.parseFloat(longitudeInput.value);
+
+            const positionExistante =
+                Number.isFinite(latitudeInitiale) &&
+                Number.isFinite(longitudeInitiale) &&
+                latitudeInitiale >= -90 &&
+                latitudeInitiale <= 90 &&
+                longitudeInitiale >= -180 &&
+                longitudeInitiale <= 180;
+
+            const centre = positionExistante
+                ? [latitudeInitiale, longitudeInitiale]
+                : [46.6034, 1.8883];
+
+            const zoom = positionExistante ? 13 : 6;
+
+            // Création de la carte Leaflet.
+            const map = L.map('lan-map').setView(centre, zoom);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            let marker = null;
+
+            // Met à jour les champs latitude et longitude.
+            function actualiserCoordonnees(position) {
+                const latitude = Number(position.lat.toFixed(7));
+                const longitude = Number(position.lng.toFixed(7));
+
+                latitudeInput.value = latitude;
+                longitudeInput.value = longitude;
+
+                coordinateStatus.textContent =
+                    'Position sélectionnée : ' +
+                    latitude + ' / ' + longitude;
+            }
+
+            // Place ou déplace le marqueur.
+            function placerMarqueur(position) {
+                actualiserCoordonnees(position);
+
+                if (marker) {
+                    marker.setLatLng(position);
+                } else {
+                    marker = L.marker(position, {
+                        draggable: true
+                    }).addTo(map);
+
+                    marker.bindPopup('Emplacement de la LAN');
+
+                    marker.on('dragend', function (event) {
+                        actualiserCoordonnees(
+                            event.target.getLatLng()
+                        );
+                    });
+                }
+            }
+
+            // Affiche la position déjà enregistrée en cas de modification.
+            if (positionExistante) {
+                placerMarqueur(
+                    L.latLng(latitudeInitiale, longitudeInitiale)
+                );
+
+                coordinateStatus.textContent =
+                    'Position actuelle de la LAN chargée.';
+            }
+
+            // Un clic sur la carte définit les coordonnées.
+            map.on('click', function (event) {
+                placerMarqueur(event.latlng);
+
+                if (marker) {
+                    marker.openPopup();
+                }
+            });
+
+            // Permet également de modifier manuellement les coordonnées.
+            function actualiserDepuisChamps() {
+                const latitude = Number.parseFloat(latitudeInput.value);
+                const longitude = Number.parseFloat(longitudeInput.value);
+
+                if (
+                    !Number.isFinite(latitude) ||
+                    !Number.isFinite(longitude) ||
+                    latitude < -90 ||
+                    latitude > 90 ||
+                    longitude < -180 ||
+                    longitude > 180
+                ) {
+                    return;
+                }
+
+                const position = L.latLng(latitude, longitude);
+
+                placerMarqueur(position);
+                map.panTo(position);
+            }
+
+            latitudeInput.addEventListener('change', actualiserDepuisChamps);
+            longitudeInput.addEventListener('change', actualiserDepuisChamps);
+
+            // Corrige le rendu de la carte lorsque son conteneur est affiché.
+            setTimeout(function () {
+                map.invalidateSize();
+            }, 200);
+        });
+    </script>
 {% endblock %}

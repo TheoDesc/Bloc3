@@ -4,130 +4,210 @@
 
 {% block body %}
 
-    <div class="container my-5">
+    <section class="detail-hero">
 
-        <a href="{{ path('app_home') }}" class="btn btn-outline-secondary mb-4">
-            Retour à l'accueil
-        </a>
+        {% if lan.image %}
+            <img
+                src="{{ asset(lan.image) }}"
+                alt="Photo de {{ lan.nom }}"
+                class="detail-cover"
+            >
+        {% endif %}
 
-        <div class="row g-4">
+        <div class="detail-cover-shade"></div>
 
-            <div class="col-lg-8">
+        <div class="container detail-hero-content">
 
-                {% if lan.image %}
-                    <img
-                        src="{{ lan.image }}"
-                        class="img-fluid rounded mb-4"
-                        alt="{{ lan.nom }}"
-                        loading="lazy"
-                    >
-                {% endif %}
+            <a href="{{ path('app_home') }}" class="back-link">
+                <i class="bi bi-arrow-left me-2"></i>
+                Retour aux événements
+            </a>
+
+            <div class="mt-4">
+                <span class="eyebrow">
+                    <i class="bi bi-controller"></i>
+                    ÉVÉNEMENT LAN
+                </span>
 
                 <h1>{{ lan.nom }}</h1>
 
-                <p class="text-secondary">
-                    <i class="bi bi-geo-alt"></i>
-                    {{ lan.ville }}
-                </p>
+                <div class="detail-meta">
+                    <span>
+                        <i class="bi bi-geo-alt"></i>
+                        {{ lan.ville }}
+                    </span>
 
-                <h4 class="mt-4">Description</h4>
+                    <span>
+                        <i class="bi bi-calendar-event"></i>
+                        {{ lan.dateDebut|date('d/m/Y') }}
+                    </span>
 
-                <p>{{ lan.description|nl2br }}</p>
-
-                <h4 class="mt-4">Localisation GPS</h4>
-
-                <p>
-                    <strong>Latitude :</strong>
-                    {{ lan.latitude ?? 'Non renseignée' }}
-                </p>
-
-                <p>
-                    <strong>Longitude :</strong>
-                    {{ lan.longitude ?? 'Non renseignée' }}
-                </p>
-
-                <h4 class="mt-4">Contact</h4>
-
-                <p>
-                    <strong>Nom :</strong>
-                    {{ lan.nomContact ?: 'Non renseigné' }}
-                </p>
-
-                <p>
-                    <strong>E-mail :</strong>
-                    {{ lan.emailContact ?: 'Non renseigné' }}
-                </p>
-
-            </div>
-
-            <div class="col-lg-4">
-
-                <div class="card shadow-sm">
-                    <div class="card-body">
-
-                        <h4>Informations</h4>
-
-                        <hr>
-
-                        <p>
-                            <strong>Ville :</strong>
-                            {{ lan.ville }}
-                        </p>
-
-                        <p>
-                            <strong>Adresse :</strong>
-                            {{ lan.adresse ?: 'Non renseignée' }}
-                        </p>
-
-                        <p>
-                            <strong>Début :</strong>
-                            {{ lan.dateDebut|date('d/m/Y H:i') }}
-                        </p>
-
-                        <p>
-                            <strong>Fin :</strong>
-                            {{ lan.dateFin|date('d/m/Y H:i') }}
-                        </p>
-
-                        <p>
-                            <strong>Jeu :</strong>
-                            {{ lan.jeu }}
-                        </p>
-
-                        <p>
-                            <strong>Places :</strong>
-                            {{ lan.placesMax }}
-                        </p>
-
-                        <p>
-                            <strong>Prix :</strong>
-                            {{ lan.prix|number_format(2, ',', ' ') }} €
-                        </p>
-
-                        <hr>
-
-                        <a
-                            href="{{ path('app_lan_pdf', {'id': lan.id}) }}"
-                            class="btn btn-outline-primary w-100 mb-3"
-                        >
-                            <i class="bi bi-file-earmark-pdf"></i>
-                            Télécharger la fiche PDF
-                        </a>
-
-                        <a
-                            href="{{ path('app_register') }}"
-                            class="btn btn-primary w-100"
-                        >
-                            Créer un compte
-                        </a>
-
-                    </div>
+                    <span>
+                        <i class="bi bi-controller"></i>
+                        {{ lan.jeu }}
+                    </span>
                 </div>
-
             </div>
 
         </div>
+    </section>
 
-    </div>
+    <main class="container">
 
-{% endblock %}²
+        <div class="detail-layout">
+
+            <section>
+
+                <span class="content-label">À PROPOS DE L'ÉVÉNEMENT</span>
+
+                <h2 class="mt-2 fw-bold">Présentation</h2>
+
+                <div class="detail-description">
+                    {{ lan.description|nl2br }}
+                </div>
+
+                <div class="mt-5">
+
+                    <span class="content-label">LOCALISATION</span>
+
+                    <h2 class="mt-2 fw-bold">Où se déroule la LAN ?</h2>
+
+                    <p class="detail-description">
+                        <i class="bi bi-geo-alt text-gradient me-2"></i>
+                        {{ lan.adresse ?: 'Adresse non renseignée' }},
+                        {{ lan.ville }}
+                    </p>
+
+                    <div class="row g-3 mt-3">
+
+                        <div class="col-md-6">
+                            <div class="sidebar-card">
+                                <p class="mb-1">Latitude</p>
+                                <h5 class="mb-0">
+                                    {{ lan.latitude ?? 'Non renseignée' }}
+                                </h5>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="sidebar-card">
+                                <p class="mb-1">Longitude</p>
+                                <h5 class="mb-0">
+                                    {{ lan.longitude ?? 'Non renseignée' }}
+                                </h5>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="mt-5">
+
+                    <span class="content-label">ORGANISATION</span>
+
+                    <h2 class="mt-2 fw-bold">Informations de contact</h2>
+
+                    <div class="sidebar-card mt-3">
+                        <p>
+                            <i class="bi bi-person me-2"></i>
+                            <strong>Contact :</strong>
+                            {{ lan.nomContact ?: 'Non renseigné' }}
+                        </p>
+
+                        <p class="mb-0">
+                            <i class="bi bi-envelope me-2"></i>
+                            <strong>E-mail :</strong>
+
+                            {% if lan.emailContact %}
+                                <a href="mailto:{{ lan.emailContact }}">
+                                    {{ lan.emailContact }}
+                                </a>
+                            {% else %}
+                                Non renseigné
+                            {% endif %}
+                        </p>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <aside class="sidebar-card">
+
+                <span class="content-label">EN BREF</span>
+
+                <h2>Informations pratiques</h2>
+
+                <hr>
+
+                <p>
+                    <i class="bi bi-geo-alt me-2"></i>
+                    <strong>Ville</strong><br>
+                    {{ lan.ville }}
+                </p>
+
+                <p>
+                    <i class="bi bi-signpost me-2"></i>
+                    <strong>Adresse</strong><br>
+                    {{ lan.adresse ?: 'Non renseignée' }}
+                </p>
+
+                <p>
+                    <i class="bi bi-calendar-check me-2"></i>
+                    <strong>Date de début</strong><br>
+                    {{ lan.dateDebut|date('d/m/Y à H:i') }}
+                </p>
+
+                <p>
+                    <i class="bi bi-calendar-x me-2"></i>
+                    <strong>Date de fin</strong><br>
+                    {{ lan.dateFin|date('d/m/Y à H:i') }}
+                </p>
+
+                <p>
+                    <i class="bi bi-controller me-2"></i>
+                    <strong>Jeu</strong><br>
+                    {{ lan.jeu }}
+                </p>
+
+                <p>
+                    <i class="bi bi-people me-2"></i>
+                    <strong>Places disponibles au total</strong><br>
+                    {{ lan.placesMax }}
+                </p>
+
+                <p>
+                    <i class="bi bi-ticket-perforated me-2"></i>
+                    <strong>Prix</strong><br>
+                    <span class="text-gradient fw-bold fs-4">
+                        {{ lan.prix|number_format(2, ',', ' ') }} €
+                    </span>
+                </p>
+
+                <hr>
+
+                <a
+                    href="{{ path('app_lan_pdf', {id: lan.id}) }}"
+                    class="btn btn-outline-light w-100"
+                >
+                    <i class="bi bi-file-earmark-pdf me-2"></i>
+                    Télécharger la fiche PDF
+                </a>
+
+                {% if not app.user %}
+                    <a
+                        href="{{ path('app_register') }}"
+                        class="btn btn-gradient w-100"
+                    >
+                        Créer un compte
+                    </a>
+                {% endif %}
+
+            </aside>
+
+        </div>
+
+    </main>
+
+{% endblock %}

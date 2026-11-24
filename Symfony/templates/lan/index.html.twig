@@ -1,73 +1,212 @@
-
 {% extends 'base.html.twig' %}
 
 {% block title %}Accueil - LAN France{% endblock %}
 
 {% block body %}
-    <header class="home-header">
-        <div class="container py-5">
-            <h1>Bienvenue sur LAN France</h1>
-            <p class="lead">Retrouve les événements LAN organisés partout en France.</p>
-            <a href="#evenements" class="btn btn-primary">Voir les événements</a>
-        </div>
-    </header>
 
-    <main class="container my-5" id="evenements">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2>Les prochaines LAN</h2>
-                <p class="text-secondary mb-0">Découvre les événements à venir.</p>
+    <section class="hero-section">
+        <div class="hero-grid"></div>
+
+        <div class="container hero-content">
+
+            <div class="hero-copy">
+
+                <span class="eyebrow">
+                    <span class="pulse-dot"></span>
+                    LA COMMUNAUTÉ GAMING FRANÇAISE
+                </span>
+
+                <h1>
+                    Le gaming prend une autre dimension.
+                    <span>Ensemble.</span>
+                </h1>
+
+                <p>
+                    Découvre les événements LAN organisés partout en France.
+                    Rencontre d'autres joueurs, partage ta passion et vis
+                    l'expérience du jeu en réseau.
+                </p>
+
+                <a href="#evenements" class="btn btn-gradient btn-lg">
+                    Découvrir les événements
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+
+                <div class="hero-trust">
+                    <span><i class="bi bi-controller"></i> Événements gaming</span>
+                    <span><i class="bi bi-geo-alt"></i> Partout en France</span>
+                    <span><i class="bi bi-people"></i> Communauté de joueurs</span>
+                </div>
+
             </div>
 
-            <span class="badge bg-primary">{{ lans|length }} événement(s)</span>
-        </div>
+            <div class="hero-visual">
+                <div class="orbit"></div>
+                <div class="orbit orbit-two"></div>
 
-        {% if lans is empty %}
-            <div class="alert alert-secondary text-center py-5">
-                <h4>Aucune LAN pour le moment</h4>
-                <p class="mb-0">Les prochains événements seront affichés ici.</p>
+                <div class="hero-controller">
+                    <i class="bi bi-controller"></i>
+                </div>
+
+                <div class="floating-tag tag-top">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    GAME ON
+                </div>
+
+                <div class="floating-tag tag-bottom">
+                    <i class="bi bi-globe-europe-africa"></i>
+                    LAN FRANCE
+                </div>
             </div>
-        {% else %}
-            <div class="row g-4">
-                {% for lan in lans %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100">
 
-                            {% if lan.image %}
-                                <img
-                                    src="{{ lan.image }}"
-                                    class="card-img-top lan-image"
-                                    alt="{{ lan.nom }}"
-                                    loading="lazy"
-                                >
-                            {% endif %}
+        </div>
+    </section>
 
-                            <div class="card-body">
-                                <h5 class="card-title">{{ lan.nom }}</h5>
+    <main class="container site-main">
 
-                                <p class="text-secondary mb-2">
-                                    {{ lan.ville }} · {{ lan.dateDebut|date('d/m/Y') }}
-                                </p>
+        <section class="events-section" id="evenements">
 
-                                <p class="card-text">
-                                    {{ lan.description|striptags|length > 100
-                                    ? lan.description|striptags|slice(0, 100) ~ '...'
-                                    : lan.description|striptags
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">TROUVE TON PROCHAIN ÉVÉNEMENT</span>
+                    <h2>Les prochaines <span class="text-gradient">LAN</span></h2>
+                    <p class="section-subtitle">
+                        Découvre les événements et prépare ta prochaine partie.
+                    </p>
+                </div>
+
+                <span class="event-count">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    {{ lans|length }} événement(s)
+                </span>
+            </div>
+
+            {% if lans is empty %}
+
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="bi bi-controller"></i>
+                    </div>
+
+                    <h3>Aucun événement pour le moment</h3>
+
+                    <p>
+                        Les prochaines LAN seront bientôt disponibles.
+                        Reviens consulter cette page !
+                    </p>
+                </div>
+
+            {% else %}
+
+                <div class="event-grid">
+
+                    {% for lan in lans %}
+
+                        <article class="event-card">
+
+                            <a
+                                href="{{ path('app_lan_show', {id: lan.id}) }}"
+                                class="event-image-link"
+                            >
+
+                                {% if lan.image %}
+                                    <img
+                                        src="{{ asset(lan.image) }}"
+                                        alt="Photo de la LAN {{ lan.nom }}"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <div class="event-placeholder">
+                                        <i class="bi bi-controller"></i>
+                                        <span>LAN FRANCE</span>
+                                    </div>
+                                {% endif %}
+
+                                <span class="event-category">
+                                    {{ lan.jeu ?: 'ÉVÉNEMENT GAMING' }}
+                                </span>
+
+                                <span class="image-overlay"></span>
+
+                            </a>
+
+                            <div class="event-card-content">
+
+                                <div class="event-meta">
+                                    <span>
+                                        <i class="bi bi-geo-alt"></i>
+                                        {{ lan.ville }}
+                                    </span>
+
+                                    <span>
+                                        <i class="bi bi-calendar-event"></i>
+                                        {{ lan.dateDebut|date('d/m/Y') }}
+                                    </span>
+                                </div>
+
+                                <h3>{{ lan.nom }}</h3>
+
+                                <p>
+                                    {{ lan.description|length > 115
+                                    ? lan.description|slice(0, 115) ~ '...'
+                                    : lan.description
                                     }}
                                 </p>
 
-                                <p><strong>Jeu :</strong> {{ lan.jeu }}</p>
-                                <p><strong>Prix :</strong> {{ lan.prix|number_format(2, ',', ' ') }} €</p>
+                                <div class="event-meta">
+                                    <span>
+                                        <i class="bi bi-people"></i>
+                                        {{ lan.placesMax }} places
+                                    </span>
 
-                                <a href="{{ path('app_lan_show', {id: lan.id}) }}" class="btn btn-primary">
-                                    Voir la LAN
+                                    <span>
+                                        <i class="bi bi-ticket-perforated"></i>
+                                        {{ lan.prix|number_format(2, ',', ' ') }} €
+                                    </span>
+                                </div>
+
+                                <a
+                                    href="{{ path('app_lan_show', {id: lan.id}) }}"
+                                    class="event-link"
+                                >
+                                    Voir l'événement
+                                    <i class="bi bi-arrow-up-right"></i>
                                 </a>
-                            </div>
 
-                        </div>
-                    </div>
-                {% endfor %}
+                            </div>
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+        <section class="community-banner">
+
+            <div class="community-symbol">
+                <i class="bi bi-people-fill"></i>
             </div>
-        {% endif %}
+
+            <div>
+                <span class="eyebrow">REJOINS L'AVENTURE</span>
+                <h2>La prochaine partie commence ici.</h2>
+                <p>
+                    Crée ton compte et découvre les événements LAN disponibles.
+                </p>
+            </div>
+
+            {% if not app.user %}
+                <a href="{{ path('app_register') }}" class="btn btn-gradient">
+                    Rejoindre la communauté
+                    <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            {% endif %}
+
+        </section>
+
     </main>
+
 {% endblock %}

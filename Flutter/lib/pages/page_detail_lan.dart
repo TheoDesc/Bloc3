@@ -1,17 +1,25 @@
+// Import des composants graphiques Flutter.
 import 'package:flutter/material.dart';
 
+// Import du modèle contenant les informations d'une LAN.
 import '../models/lan.dart';
 
+// Import du service qui construit les URL des photos.
+import '../services/image_service.dart';
+
+// Page affichant toutes les informations d'une LAN sélectionnée.
 class PageDetailLan extends StatelessWidget {
   final LanModel lan;
 
   const PageDetailLan({required this.lan, super.key});
 
+  // Couleurs utilisées dans le design.
   static const Color cyan = Color(0xFF00E5FF);
   static const Color blue = Color(0xFF6475FF);
   static const Color green = Color(0xFFB6FF5C);
   static const Color panel = Color(0xFF101A2B);
 
+  // Image affichée si aucune photo n'est disponible.
   Widget imageParDefaut() {
     return Container(
       height: 285,
@@ -29,25 +37,32 @@ class PageDetailLan extends StatelessWidget {
     );
   }
 
+  // Charge la photo de la LAN depuis Symfony ou depuis une ancienne URL.
   Widget imageEvenement() {
-    final url = lan.image.trim();
+    final url = ImageService.urlImage(lan.image);
 
-    if (url.isEmpty ||
-        (!url.startsWith('http://') && !url.startsWith('https://'))) {
+    if (url == null) {
       return imageParDefaut();
     }
 
     return Image.network(
       url,
+
+      // Nécessaire pour les photos stockées sur le serveur local.
+      headers: ImageService.headersImage(lan.image),
+
       width: double.infinity,
       height: 285,
       fit: BoxFit.cover,
+
+      // Affiche l'image par défaut en cas d'échec du chargement.
       errorBuilder: (context, error, stackTrace) {
         return imageParDefaut();
       },
     );
   }
 
+  // Crée le titre numéroté d'une section.
   Widget titreSection(String titre, String numero) {
     return Padding(
       padding: const EdgeInsets.only(top: 27, bottom: 14),
@@ -78,6 +93,7 @@ class PageDetailLan extends StatelessWidget {
     );
   }
 
+  // Crée un encart réutilisable pour afficher une information.
   Widget information(
     IconData icone,
     String titre,
@@ -96,6 +112,7 @@ class PageDetailLan extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Icône associée à l'information.
           Container(
             width: 41,
             height: 41,
@@ -106,6 +123,8 @@ class PageDetailLan extends StatelessWidget {
             child: Icon(icone, color: couleur, size: 19),
           ),
           const SizedBox(width: 13),
+
+          // Titre et valeur de l'information.
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,6 +155,7 @@ class PageDetailLan extends StatelessWidget {
     );
   }
 
+  // Affiche le prix de participation dans un encart.
   Widget encartPrix(String prix) {
     return Container(
       padding: const EdgeInsets.all(17),
@@ -182,13 +202,16 @@ class PageDetailLan extends StatelessWidget {
     );
   }
 
+  // Construit l'ensemble de la page de détail.
   @override
   Widget build(BuildContext context) {
+    // Affiche "Gratuit" lorsque le prix est nul.
     final prix = lan.prix == 0 ? 'Gratuit' : '${lan.prix.toStringAsFixed(2)} €';
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
+          // Barre supérieure avec la photo et le nom de la LAN.
           SliverAppBar(
             expandedHeight: 285,
             pinned: true,
@@ -199,6 +222,8 @@ class PageDetailLan extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   imageEvenement(),
+
+                  // Dégradé sombre pour améliorer la lisibilité du texte.
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -211,6 +236,8 @@ class PageDetailLan extends StatelessWidget {
                       ),
                     ),
                   ),
+
+                  // Nom, catégorie et ville de la LAN.
                   Positioned(
                     left: 20,
                     right: 20,
@@ -277,6 +304,8 @@ class PageDetailLan extends StatelessWidget {
               ),
             ),
           ),
+
+          // Corps de la page contenant toutes les informations.
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(19, 10, 19, 35),
@@ -285,6 +314,7 @@ class PageDetailLan extends StatelessWidget {
                 children: [
                   encartPrix(prix),
 
+                  // Première section : présentation.
                   titreSection('Présentation', '01'),
 
                   Text(
@@ -298,6 +328,7 @@ class PageDetailLan extends StatelessWidget {
                     ),
                   ),
 
+                  // Deuxième section : informations pratiques.
                   titreSection('Informations pratiques', '02'),
 
                   information(
@@ -306,25 +337,30 @@ class PageDetailLan extends StatelessWidget {
                     lan.jeu,
                     couleur: green,
                   ),
+
                   information(Icons.location_on_outlined, 'Ville', lan.ville),
+
                   information(
                     Icons.map_outlined,
                     'Adresse',
                     lan.adresse,
                     couleur: blue,
                   ),
+
                   information(
                     Icons.calendar_today_outlined,
                     'Date de début',
                     lan.dateDebut,
                     couleur: blue,
                   ),
+
                   information(
                     Icons.event_outlined,
                     'Date de fin',
                     lan.dateFin,
                     couleur: blue,
                   ),
+
                   information(
                     Icons.people_outline_rounded,
                     'Capacité maximale',
@@ -332,6 +368,22 @@ class PageDetailLan extends StatelessWidget {
                     couleur: green,
                   ),
 
+                  // Affiche les deux coordonnées GPS de l'événement.
+                  information(
+                    Icons.my_location_outlined,
+                    'Latitude',
+                    lan.latitude?.toStringAsFixed(6) ?? '',
+                    couleur: cyan,
+                  ),
+
+                  information(
+                    Icons.explore_outlined,
+                    'Longitude',
+                    lan.longitude?.toStringAsFixed(6) ?? '',
+                    couleur: cyan,
+                  ),
+
+                  // Troisième section : coordonnées de l'organisateur.
                   titreSection('Organisateur', '03'),
 
                   information(
@@ -340,6 +392,7 @@ class PageDetailLan extends StatelessWidget {
                     lan.nomContact,
                     couleur: blue,
                   ),
+
                   information(
                     Icons.alternate_email_rounded,
                     'Adresse e-mail',
@@ -349,6 +402,7 @@ class PageDetailLan extends StatelessWidget {
 
                   const SizedBox(height: 15),
 
+                  // Rappel permettant de contacter l'organisateur.
                   Container(
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(

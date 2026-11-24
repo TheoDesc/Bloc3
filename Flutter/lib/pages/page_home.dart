@@ -1,10 +1,20 @@
+// Import des composants graphiques Flutter.
 import 'package:flutter/material.dart';
 
+// Import du modèle qui représente une LAN.
 import '../models/lan.dart';
+
+// Import du service qui communique avec l'API Symfony.
 import '../services/api_service.dart';
+
+// Import du service qui construit les URL des photos.
+import '../services/image_service.dart';
+
+// Import des pages d'ajout et de détail d'une LAN.
 import 'page_ajout_lan.dart';
 import 'page_detail_lan.dart';
 
+// Page d'accueil qui affiche la liste des LAN disponibles.
 class PageHome extends StatefulWidget {
   const PageHome({super.key});
 
@@ -13,38 +23,54 @@ class PageHome extends StatefulWidget {
 }
 
 class _PageHomeState extends State<PageHome> {
+  // Couleurs utilisées dans le design de l'application.
   static const Color cyan = Color(0xFF00E5FF);
   static const Color blue = Color(0xFF6475FF);
   static const Color green = Color(0xFFB6FF5C);
   static const Color background = Color(0xFF070B16);
   static const Color panel = Color(0xFF101A2B);
 
+  // Nombre de LAN récupérées à chaque appel de pagination.
   static const int limite = 10;
 
+  // Contrôleur permettant de suivre la position du défilement.
   final ScrollController scrollController = ScrollController();
+
+  // Contrôleur du champ de recherche.
   final rechercheController = TextEditingController();
 
+  // Liste contenant toutes les LAN déjà récupérées depuis l'API.
   List<LanModel> lans = [];
 
+  // Numéro de la page actuellement chargée et nombre total de LAN.
   int page = 0;
   int total = 0;
 
+  // États des différents chargements.
   bool chargementInitial = true;
   bool chargementSuite = false;
   bool hasMore = true;
 
+  // Messages d'erreur éventuels.
   String? erreur;
   String? erreurPagination;
+
+  // Texte actuellement saisi dans la recherche.
   String recherche = '';
 
+  // Initialise la page et démarre le premier chargement.
   @override
   void initState() {
     super.initState();
 
+    // Surveille le défilement pour déclencher la pagination.
     scrollController.addListener(surveillerDefilement);
+
+    // Charge les dix premières LAN.
     chargerPremierePage();
   }
 
+  // Libère les contrôleurs lorsque la page est détruite.
   @override
   void dispose() {
     scrollController.removeListener(surveillerDefilement);
@@ -59,16 +85,19 @@ class _PageHomeState extends State<PageHome> {
 
     final position = scrollController.position;
 
+    // Évite une division par zéro si la liste ne peut pas défiler.
     if (position.maxScrollExtent <= 0) return;
 
-    final progression =
-        position.pixels / position.maxScrollExtent;
+    // Calcule la progression du défilement.
+    final progression = position.pixels / position.maxScrollExtent;
 
+    // Charge les données suivantes à partir de 80 %.
     if (progression >= 0.8) {
       chargerPageSuivante();
     }
   }
 
+  // Récupère les dix premières LAN depuis l'API.
   Future<void> chargerPremierePage() async {
     setState(() {
       chargementInitial = true;
@@ -81,13 +110,11 @@ class _PageHomeState extends State<PageHome> {
     });
 
     try {
-      final resultat = await ApiService.getLansPage(
-        page: 1,
-        limit: limite,
-      );
+      final resultat = await ApiService.getLansPage(page: 1, limit: limite);
 
       if (!mounted) return;
 
+      // Met à jour les LAN et les informations de pagination.
       setState(() {
         lans = resultat.lans;
         page = resultat.page;
@@ -109,14 +136,15 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
+  // Recharge complètement la liste.
   Future<void> actualiser() async {
     await chargerPremierePage();
   }
 
+  // Récupère la page suivante lorsque l'utilisateur fait défiler la liste.
   Future<void> chargerPageSuivante() async {
-    if (chargementInitial ||
-        chargementSuite ||
-        !hasMore) {
+    // Évite plusieurs requêtes simultanées ou inutiles.
+    if (chargementInitial || chargementSuite || !hasMore) {
       return;
     }
 
@@ -126,6 +154,7 @@ class _PageHomeState extends State<PageHome> {
     });
 
     try {
+      // Demande la page suivante à Symfony.
       final resultat = await ApiService.getLansPage(
         page: page + 1,
         limit: limite,
@@ -133,6 +162,7 @@ class _PageHomeState extends State<PageHome> {
 
       if (!mounted) return;
 
+      // Ajoute les nouvelles LAN à la liste existante.
       setState(() {
         lans.addAll(resultat.lans);
         page = resultat.page;
@@ -143,8 +173,7 @@ class _PageHomeState extends State<PageHome> {
       if (!mounted) return;
 
       setState(() {
-        erreurPagination =
-            e.toString().replaceFirst('Exception: ', '');
+        erreurPagination = e.toString().replaceFirst('Exception: ', '');
       });
     } finally {
       if (mounted) {
@@ -155,16 +184,16 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
+  // Ouvre le formulaire pour ajouter une LAN.
   Future<void> ouvrirAjout() async {
     final resultat = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (context) => const PageAjoutLan(),
-      ),
+      MaterialPageRoute(builder: (context) => const PageAjoutLan()),
     );
 
     if (!mounted) return;
 
+    // Recharge la liste si la création a réussi.
     if (resultat == true) {
       await actualiser();
 
@@ -179,6 +208,7 @@ class _PageHomeState extends State<PageHome> {
     }
   }
 
+  // Filtre localement les LAN déjà chargées.
   List<LanModel> filtrerLans() {
     if (recherche.trim().isEmpty) {
       return lans;
@@ -186,6 +216,7 @@ class _PageHomeState extends State<PageHome> {
 
     final texte = recherche.toLowerCase().trim();
 
+    // Recherche dans le nom, la ville et le jeu.
     return lans.where((lan) {
       return lan.nom.toLowerCase().contains(texte) ||
           lan.ville.toLowerCase().contains(texte) ||
@@ -193,22 +224,19 @@ class _PageHomeState extends State<PageHome> {
     }).toList();
   }
 
+  // Formate le prix pour son affichage.
   String prixTexte(double prix) {
     if (prix == 0) return 'GRATUIT';
     return '${prix.toStringAsFixed(2)} €';
   }
 
+  // Crée une étiquette colorée réutilisable.
   Widget etiquette(String texte, {Color couleur = cyan}) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: couleur.withOpacity(0.10),
-        border: Border.all(
-          color: couleur.withOpacity(0.45),
-        ),
+        border: Border.all(color: couleur.withOpacity(0.45)),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -223,70 +251,69 @@ class _PageHomeState extends State<PageHome> {
     );
   }
 
+  // Affiche une image par défaut si aucune photo n'est disponible.
   Widget imageParDefaut(double hauteur) {
     return Container(
       height: hauteur,
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFF172C48),
-            Color(0xFF242D5A),
-          ],
+          colors: [Color(0xFF172C48), Color(0xFF242D5A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: const Center(
-        child: Icon(
-          Icons.sports_esports_rounded,
-          color: cyan,
-          size: 58,
-        ),
+        child: Icon(Icons.sports_esports_rounded, color: cyan, size: 58),
       ),
     );
   }
 
+  // Charge la photo de la LAN depuis Symfony.
   Widget imageLan(LanModel lan, {double hauteur = 170}) {
-    final url = lan.image.trim();
+    // Transforme le chemin local en URL complète.
+    final url = ImageService.urlImage(lan.image);
 
-    if (url.isEmpty ||
-        (!url.startsWith('http://') &&
-            !url.startsWith('https://'))) {
+    // Affiche l'image par défaut si aucun chemin n'est renseigné.
+    if (url == null) {
       return imageParDefaut(hauteur);
     }
 
     return Image.network(
       url,
+
+      // Ajoute l'en-tête Host pour les photos locales de Symfony.
+      headers: ImageService.headersImage(lan.image),
+
       width: double.infinity,
       height: hauteur,
       fit: BoxFit.cover,
+
+      // Affiche l'image par défaut si le chargement échoue.
       errorBuilder: (context, error, stackTrace) {
         return imageParDefaut(hauteur);
       },
     );
   }
 
+  // Construit l'en-tête de la page d'accueil.
   Widget entete() {
     return Row(
       children: [
+        // Logo de l'application.
         Container(
           width: 43,
           height: 43,
           decoration: BoxDecoration(
             color: const Color(0xFF12263A),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: cyan.withOpacity(0.5),
-            ),
+            border: Border.all(color: cyan.withOpacity(0.5)),
           ),
-          child: const Icon(
-            Icons.memory_rounded,
-            color: cyan,
-            size: 25,
-          ),
+          child: const Icon(Icons.memory_rounded, color: cyan, size: 25),
         ),
         const SizedBox(width: 12),
+
+        // Nom et slogan de l'application.
         const Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,17 +338,14 @@ class _PageHomeState extends State<PageHome> {
             ],
           ),
         ),
+
+        // Indicateur visuel de connexion.
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 9,
-            vertical: 7,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
           decoration: BoxDecoration(
             color: green.withOpacity(0.08),
             borderRadius: BorderRadius.circular(7),
-            border: Border.all(
-              color: green.withOpacity(0.35),
-            ),
+            border: Border.all(color: green.withOpacity(0.35)),
           ),
           child: const Row(
             children: [
@@ -340,18 +364,18 @@ class _PageHomeState extends State<PageHome> {
           ),
         ),
         const SizedBox(width: 5),
+
+        // Bouton d'actualisation.
         IconButton(
           onPressed: actualiser,
           tooltip: 'Actualiser',
-          icon: const Icon(
-            Icons.refresh_rounded,
-            color: cyan,
-          ),
+          icon: const Icon(Icons.refresh_rounded, color: cyan),
         ),
       ],
     );
   }
 
+  // Construit la bannière de présentation.
   Widget banniere() {
     return Container(
       width: double.infinity,
@@ -359,16 +383,11 @@ class _PageHomeState extends State<PageHome> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF102B42),
-            Color(0xFF171D3A),
-          ],
+          colors: [Color(0xFF102B42), Color(0xFF171D3A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(
-          color: cyan.withOpacity(0.28),
-        ),
+        border: Border.all(color: cyan.withOpacity(0.28)),
       ),
       child: Row(
         children: [
@@ -415,18 +434,12 @@ class _PageHomeState extends State<PageHome> {
             decoration: BoxDecoration(
               color: cyan.withOpacity(0.07),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: cyan.withOpacity(0.22),
-              ),
+              border: Border.all(color: cyan.withOpacity(0.22)),
             ),
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.radar_rounded,
-                  color: cyan,
-                  size: 42,
-                ),
+                Icon(Icons.radar_rounded, color: cyan, size: 42),
                 SizedBox(height: 7),
                 Text(
                   'SCAN',
@@ -445,6 +458,7 @@ class _PageHomeState extends State<PageHome> {
     );
   }
 
+  // Regroupe l'en-tête, la bannière, la recherche et le compteur.
   Widget enteteListe(List<LanModel> liste) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -465,12 +479,11 @@ class _PageHomeState extends State<PageHome> {
         const SizedBox(height: 8),
         const Text(
           'Explore les LAN.',
-          style: TextStyle(
-            fontSize: 23,
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 15),
+
+        // Champ permettant de rechercher dans les LAN chargées.
         TextField(
           controller: rechercheController,
           onChanged: (value) {
@@ -483,18 +496,20 @@ class _PageHomeState extends State<PageHome> {
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: recherche.isNotEmpty
                 ? IconButton(
-              onPressed: () {
-                rechercheController.clear();
-                setState(() {
-                  recherche = '';
-                });
-              },
-              icon: const Icon(Icons.close_rounded),
-            )
+                    onPressed: () {
+                      rechercheController.clear();
+                      setState(() {
+                        recherche = '';
+                      });
+                    },
+                    icon: const Icon(Icons.close_rounded),
+                  )
                 : null,
           ),
         ),
         const SizedBox(height: 21),
+
+        // Affiche le nombre de résultats et le total en base.
         Row(
           children: [
             const Text(
@@ -522,31 +537,31 @@ class _PageHomeState extends State<PageHome> {
     );
   }
 
+  // Construit la carte d'une LAN dans la liste.
   Widget carteLan(LanModel lan, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 17),
       decoration: BoxDecoration(
         color: panel,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: const Color(0xFF26364D),
-        ),
+        border: Border.all(color: const Color(0xFF26364D)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(15),
+
+          // Ouvre la page de détail au clic sur une LAN.
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => PageDetailLan(lan: lan),
-              ),
+              MaterialPageRoute(builder: (context) => PageDetailLan(lan: lan)),
             );
           },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Photo et étiquettes affichées sur la partie supérieure.
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(15),
@@ -564,14 +579,13 @@ class _PageHomeState extends State<PageHome> {
                     Positioned(
                       bottom: 12,
                       right: 12,
-                      child: etiquette(
-                        prixTexte(lan.prix),
-                        couleur: green,
-                      ),
+                      child: etiquette(prixTexte(lan.prix), couleur: green),
                     ),
                   ],
                 ),
               ),
+
+              // Informations principales affichées sous la photo.
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -623,10 +637,7 @@ class _PageHomeState extends State<PageHome> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Divider(
-                      color: Color(0xFF26364D),
-                      height: 1,
-                    ),
+                    const Divider(color: Color(0xFF26364D), height: 1),
                     const SizedBox(height: 12),
                     Row(
                       children: [
@@ -638,9 +649,7 @@ class _PageHomeState extends State<PageHome> {
                         const SizedBox(width: 7),
                         Expanded(
                           child: Text(
-                            lan.jeu.isEmpty
-                                ? 'Jeu non renseigné'
-                                : lan.jeu,
+                            lan.jeu.isEmpty ? 'Jeu non renseigné' : lan.jeu,
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
@@ -674,16 +683,17 @@ class _PageHomeState extends State<PageHome> {
     );
   }
 
+  // Affiche le bas de la liste selon l'état de la pagination.
   Widget piedListe() {
+    // Indicateur pendant le chargement de la page suivante.
     if (chargementSuite) {
       return const Padding(
         padding: EdgeInsets.all(20),
-        child: Center(
-          child: CircularProgressIndicator(color: cyan),
-        ),
+        child: Center(child: CircularProgressIndicator(color: cyan)),
       );
     }
 
+    // Affiche une erreur et permet de réessayer la requête.
     if (erreurPagination != null) {
       return Padding(
         padding: const EdgeInsets.all(15),
@@ -692,23 +702,18 @@ class _PageHomeState extends State<PageHome> {
             Text(
               erreurPagination!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF9AABC1),
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Color(0xFF9AABC1), fontSize: 12),
             ),
             TextButton(
               onPressed: chargerPageSuivante,
-              child: const Text(
-                'RÉESSAYER',
-                style: TextStyle(color: cyan),
-              ),
+              child: const Text('RÉESSAYER', style: TextStyle(color: cyan)),
             ),
           ],
         ),
       );
     }
 
+    // Indique qu'il reste des LAN à découvrir.
     if (hasMore) {
       return const Padding(
         padding: EdgeInsets.all(18),
@@ -716,15 +721,13 @@ class _PageHomeState extends State<PageHome> {
           child: Text(
             'Continue à défiler pour découvrir les prochaines LAN.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF71839D),
-              fontSize: 11,
-            ),
+            style: TextStyle(color: Color(0xFF71839D), fontSize: 11),
           ),
         ),
       );
     }
 
+    // Message affiché lorsque toutes les LAN ont été chargées.
     return const Padding(
       padding: EdgeInsets.all(20),
       child: Center(
@@ -740,14 +743,12 @@ class _PageHomeState extends State<PageHome> {
     );
   }
 
+  // Affiche un message si la liste est vide ou sans résultat.
   Widget messageVide(List<LanModel> liste) {
     final aucunResultat = lans.isNotEmpty && liste.isEmpty;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 40,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
       child: Column(
         children: [
           const Icon(
@@ -761,15 +762,14 @@ class _PageHomeState extends State<PageHome> {
                 ? 'Aucun résultat pour cette recherche.'
                 : 'Aucune LAN disponible pour le moment.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF9AABC1),
-            ),
+            style: const TextStyle(color: Color(0xFF9AABC1)),
           ),
         ],
       ),
     );
   }
 
+  // Affiche un écran d'erreur si le chargement initial échoue.
   Widget erreurChargement() {
     return Center(
       child: Padding(
@@ -777,27 +777,17 @@ class _PageHomeState extends State<PageHome> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.cloud_off_rounded,
-              color: cyan,
-              size: 48,
-            ),
+            const Icon(Icons.cloud_off_rounded, color: cyan, size: 48),
             const SizedBox(height: 17),
             const Text(
               'CONNEXION INTERROMPUE',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
             ),
             const SizedBox(height: 10),
             Text(
               erreur ?? 'Impossible de charger les LAN.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF8C9BB1),
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Color(0xFF8C9BB1), fontSize: 12),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
@@ -815,30 +805,28 @@ class _PageHomeState extends State<PageHome> {
     );
   }
 
+  // Construit la page et adapte l'affichage à l'état des données.
   @override
   Widget build(BuildContext context) {
+    // Affiche un indicateur pendant le premier chargement.
     if (chargementInitial && lans.isEmpty) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: cyan),
-        ),
+        body: Center(child: CircularProgressIndicator(color: cyan)),
       );
     }
 
+    // Affiche l'écran d'erreur si la première requête échoue.
     if (erreur != null && lans.isEmpty) {
-      return Scaffold(
-        body: SafeArea(
-          child: erreurChargement(),
-        ),
-      );
+      return Scaffold(body: SafeArea(child: erreurChargement()));
     }
 
+    // Récupère les LAN correspondant à la recherche.
     final liste = filtrerLans();
 
     final nombreCartes = liste.isEmpty ? 1 : liste.length;
-    final afficherPied = hasMore ||
-        chargementSuite ||
-        erreurPagination != null;
+
+    // Détermine s'il faut afficher le bas de la liste.
+    final afficherPied = hasMore || chargementSuite || erreurPagination != null;
 
     return Scaffold(
       body: SafeArea(
@@ -849,14 +837,18 @@ class _PageHomeState extends State<PageHome> {
             controller: scrollController,
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(19, 12, 19, 30),
-            itemCount: 1 +
-                nombreCartes +
-                (afficherPied ? 1 : 0),
+
+            // Compte l'en-tête, les cartes et le pied de liste éventuel.
+            itemCount: 1 + nombreCartes + (afficherPied ? 1 : 0),
+
+            // Construit chaque élément de la liste au besoin.
             itemBuilder: (context, index) {
+              // Premier élément : en-tête et recherche.
               if (index == 0) {
                 return enteteListe(liste);
               }
 
+              // Éléments suivants : cartes des LAN.
               if (index <= nombreCartes) {
                 if (liste.isEmpty) {
                   return messageVide(liste);
@@ -865,11 +857,14 @@ class _PageHomeState extends State<PageHome> {
                 return carteLan(liste[index - 1], index);
               }
 
+              // Dernier élément : chargement, erreur ou fin de liste.
               return piedListe();
             },
           ),
         ),
       ),
+
+      // Bouton permettant d'ouvrir le formulaire d'ajout.
       floatingActionButton: FloatingActionButton.extended(
         onPressed: ouvrirAjout,
         backgroundColor: cyan,

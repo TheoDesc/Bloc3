@@ -88,6 +88,7 @@ class LanApiController extends AbstractController
     }
 
     #[Route('', name: 'api_lan_create', methods: ['POST'])]
+    #[IsGranted('ROLE_REDACTEUR')]
     public function create(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -238,6 +239,7 @@ class LanApiController extends AbstractController
         requirements: ['id' => '\d+'],
         methods: ['PUT']
     )]
+    #[IsGranted('ROLE_VERIFICATEUR')]
     public function update(
         int $id,
         Request $request,
@@ -313,6 +315,7 @@ class LanApiController extends AbstractController
         requirements: ['id' => '\d+'],
         methods: ['DELETE']
     )]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(
         int $id,
         LanRepository $repository,
